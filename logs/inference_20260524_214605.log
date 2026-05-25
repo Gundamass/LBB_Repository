@@ -1,6 +1,0 @@
-2026-05-24 21:46:05,353 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/inference_20260524_214605.log
-2026-05-24 21:46:05,353 | INFO | Hardware: device=cpu gpu_count=0 gpu_names=[] total_vram_gb=0.00
-2026-05-24 21:46:06,065 | INFO | Model built: detector=fasterrcnn_resnet50_fpn_v2 classes=5 hybrid(proposal=True metric=True)
-2026-05-24 21:46:06,398 | INFO | Loaded checkpoint: /home/heqing/LBB_competition/checkpoints/best_model.pt
-2026-05-24 21:46:06,403 | INFO | Test set size=2 | batch=2 workers=8
-2026-05-24 21:46:37,459 | INFO | Submission exported: /home/heqing/LBB_competition/outputs/少样本条件下电子产品外观缺陷检测_默认团队_方案C_smoke.zip

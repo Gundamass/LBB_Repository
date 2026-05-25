@@ -1,5 +1,0 @@
-2026-05-24 22:59:10,061 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/autotune_20260524_225910.log
-2026-05-24 22:59:11,185 | INFO | Autotune hardware: cuda | GPUs=8 | names=['NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000']
-2026-05-24 22:59:11,186 | INFO | Picked 3 trials from 144 candidates
-2026-05-24 22:59:11,187 | INFO | ===== Trial 1/3 =====
-2026-05-24 22:59:11,187 | INFO | Overrides: {"model.detector_name": "retinanet_resnet50_fpn_v2", "training.lr": 0.0004, "training.weight_decay": 0.0005, "training.center_loss_weight": 0.0, "hybrid.metric_weight": 0.15, "model.score_threshold": 0.05}

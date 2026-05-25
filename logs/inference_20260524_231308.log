@@ -1,7 +1,0 @@
-2026-05-24 23:13:08,697 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/inference_20260524_231308.log
-2026-05-24 23:13:09,825 | INFO | Hardware: device=cuda gpu_count=8 gpu_names=['NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000'] total_vram_gb=379.21
-2026-05-24 23:13:10,459 | INFO | Model built: detector=fasterrcnn_resnet50_fpn_v2 classes=5 hybrid(proposal=True metric=True)
-2026-05-24 23:13:11,064 | INFO | Loaded checkpoint: checkpoints/best_model.pt
-2026-05-24 23:13:11,064 | INFO | Ensemble size: 1
-2026-05-24 23:13:11,068 | INFO | Test set size=2 | batch=4 workers=8
-2026-05-24 23:13:13,505 | INFO | Submission exported: /home/heqing/LBB_competition/outputs/ensemble_smoke/方案C_smoke_single.zip
