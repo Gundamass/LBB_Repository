@@ -1,0 +1,8 @@
+2026-05-24 21:38:37,043 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/train_20260524_213837.log
+2026-05-24 21:38:37,044 | INFO | Hardware: device=cpu gpu_count=0 gpu_names=[] total_vram_gb=0.00
+2026-05-24 21:38:37,056 | INFO | Data split: train=148 val=16 | batch=2 workers=4
+2026-05-24 21:38:37,784 | INFO | Model built: detector=fasterrcnn_resnet50_fpn_v2 classes=5 hybrid(proposal=True metric=True)
+2026-05-24 21:44:28,381 | INFO | Epoch 1 train_loss=0.352438 lr=0.00000100
+2026-05-24 21:45:17,949 | INFO | Validation mAP@0.5 = 0.031266
+2026-05-24 21:45:18,563 | INFO | Saved new best checkpoint: /home/heqing/LBB_competition/checkpoints/best_model.pt
+2026-05-24 21:45:19,720 | INFO | Training finished. best_mAP50=0.031266

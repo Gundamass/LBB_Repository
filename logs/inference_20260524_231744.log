@@ -1,0 +1,9 @@
+2026-05-24 23:17:44,884 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/inference_20260524_231744.log
+2026-05-24 23:17:46,033 | INFO | Hardware: device=cuda gpu_count=8 gpu_names=['NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000'] total_vram_gb=379.21
+2026-05-24 23:17:46,648 | INFO | Model built: detector=fasterrcnn_resnet50_fpn_v2 classes=5 hybrid(proposal=True metric=True)
+2026-05-24 23:17:47,242 | INFO | Loaded checkpoint: checkpoints/best_model.pt
+2026-05-24 23:17:47,803 | INFO | Model built: detector=fasterrcnn_resnet50_fpn_v2 classes=5 hybrid(proposal=True metric=True)
+2026-05-24 23:17:48,263 | INFO | Loaded checkpoint: checkpoints/seed123/best_model.pt
+2026-05-24 23:17:48,263 | INFO | Ensemble size: 2
+2026-05-24 23:17:48,276 | INFO | Test set size=876 | batch=4 workers=8
+2026-05-24 23:38:57,388 | INFO | Submission exported: /home/heqing/LBB_competition/outputs/少样本条件下电子产品外观缺陷检测_默认团队_方案C.zip

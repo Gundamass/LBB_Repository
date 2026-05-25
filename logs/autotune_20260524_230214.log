@@ -1,0 +1,41 @@
+2026-05-24 23:02:14,964 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/autotune_20260524_230214.log
+2026-05-24 23:02:16,131 | INFO | Autotune hardware: cuda | GPUs=8 | names=['NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000']
+2026-05-24 23:02:16,133 | INFO | Picked 4 trials from 486 candidates
+2026-05-24 23:02:16,134 | INFO | ===== Trial 1/4 =====
+2026-05-24 23:02:16,134 | INFO | Overrides: {"model.detector_name": "fasterrcnn_resnet50_fpn_v2", "training.lr": 0.0002, "training.weight_decay": 0.0001, "training.center_loss_weight": 0.06, "hybrid.metric_weight": 0.25, "model.score_threshold": 0.08, "hybrid.proposal_max_per_image": 60}
+2026-05-24 23:02:32,294 | INFO | Validation mAP@0.5 = 0.006655
+2026-05-24 23:02:32,295 | INFO | trial=1 epoch=1 train_loss=0.472368 val_mAP50=0.006655 lr=0.00015025
+2026-05-24 23:02:43,238 | INFO | Validation mAP@0.5 = 0.036129
+2026-05-24 23:02:43,239 | INFO | trial=1 epoch=2 train_loss=0.201013 val_mAP50=0.036129 lr=0.00005075
+2026-05-24 23:02:53,904 | INFO | Validation mAP@0.5 = 0.096712
+2026-05-24 23:02:53,905 | INFO | trial=1 epoch=3 train_loss=0.165304 val_mAP50=0.096712 lr=0.00000100
+2026-05-24 23:02:53,970 | INFO | Trial 1 result: {'trial_id': 1, 'best_map50': 0.09671217447031634, 'best_epoch': 3, 'elapsed_sec': 36.98, 'detector': 'fasterrcnn_resnet50_fpn_v2', 'lr': 0.0002, 'weight_decay': 0.0001, 'center_loss_weight': 0.06, 'metric_weight': 0.25, 'proposal_max_per_image': 60, 'score_threshold': 0.08}
+2026-05-24 23:02:53,971 | INFO | ===== Trial 2/4 =====
+2026-05-24 23:02:53,971 | INFO | Overrides: {"model.detector_name": "fasterrcnn_resnet50_fpn_v2", "training.lr": 0.0002, "training.weight_decay": 0.0005, "training.center_loss_weight": 0.06, "hybrid.metric_weight": 0.35, "model.score_threshold": 0.05, "hybrid.proposal_max_per_image": 120}
+2026-05-24 23:03:08,963 | INFO | Validation mAP@0.5 = 0.001892
+2026-05-24 23:03:08,964 | INFO | trial=2 epoch=1 train_loss=0.480707 val_mAP50=0.001892 lr=0.00015025
+2026-05-24 23:03:21,718 | INFO | Validation mAP@0.5 = 0.003124
+2026-05-24 23:03:21,718 | INFO | trial=2 epoch=2 train_loss=0.202722 val_mAP50=0.003124 lr=0.00005075
+2026-05-24 23:03:34,084 | INFO | Validation mAP@0.5 = 0.095372
+2026-05-24 23:03:34,085 | INFO | trial=2 epoch=3 train_loss=0.155362 val_mAP50=0.095372 lr=0.00000100
+2026-05-24 23:03:34,141 | INFO | Trial 2 result: {'trial_id': 2, 'best_map50': 0.09537196975093193, 'best_epoch': 3, 'elapsed_sec': 39.48, 'detector': 'fasterrcnn_resnet50_fpn_v2', 'lr': 0.0002, 'weight_decay': 0.0005, 'center_loss_weight': 0.06, 'metric_weight': 0.35, 'proposal_max_per_image': 120, 'score_threshold': 0.05}
+2026-05-24 23:03:34,142 | INFO | ===== Trial 3/4 =====
+2026-05-24 23:03:34,142 | INFO | Overrides: {"model.detector_name": "fasterrcnn_resnet50_fpn_v2", "training.lr": 0.0004, "training.weight_decay": 0.0005, "training.center_loss_weight": 0.03, "hybrid.metric_weight": 0.15, "model.score_threshold": 0.03, "hybrid.proposal_max_per_image": 80}
+2026-05-24 23:03:46,318 | INFO | Validation mAP@0.5 = 0.000000
+2026-05-24 23:03:46,319 | INFO | trial=3 epoch=1 train_loss=0.518187 val_mAP50=0.000000 lr=0.00030025
+2026-05-24 23:03:57,852 | INFO | Validation mAP@0.5 = 0.009084
+2026-05-24 23:03:57,853 | INFO | trial=3 epoch=2 train_loss=0.216692 val_mAP50=0.009084 lr=0.00010075
+2026-05-24 23:04:09,183 | INFO | Validation mAP@0.5 = 0.001443
+2026-05-24 23:04:09,184 | INFO | trial=3 epoch=3 train_loss=0.182662 val_mAP50=0.001443 lr=0.00000100
+2026-05-24 23:04:09,236 | INFO | Trial 3 result: {'trial_id': 3, 'best_map50': 0.009084302325581396, 'best_epoch': 2, 'elapsed_sec': 34.41, 'detector': 'fasterrcnn_resnet50_fpn_v2', 'lr': 0.0004, 'weight_decay': 0.0005, 'center_loss_weight': 0.03, 'metric_weight': 0.15, 'proposal_max_per_image': 80, 'score_threshold': 0.03}
+2026-05-24 23:04:09,236 | INFO | ===== Trial 4/4 =====
+2026-05-24 23:04:09,236 | INFO | Overrides: {"model.detector_name": "fasterrcnn_resnet50_fpn_v2", "training.lr": 0.0002, "training.weight_decay": 0.0001, "training.center_loss_weight": 0.06, "hybrid.metric_weight": 0.35, "model.score_threshold": 0.03, "hybrid.proposal_max_per_image": 60}
+2026-05-24 23:04:23,309 | INFO | Validation mAP@0.5 = 0.002501
+2026-05-24 23:04:23,310 | INFO | trial=4 epoch=1 train_loss=0.479995 val_mAP50=0.002501 lr=0.00015025
+2026-05-24 23:04:33,925 | INFO | Validation mAP@0.5 = 0.005135
+2026-05-24 23:04:33,925 | INFO | trial=4 epoch=2 train_loss=0.206266 val_mAP50=0.005135 lr=0.00005075
+2026-05-24 23:04:44,549 | INFO | Validation mAP@0.5 = 0.065184
+2026-05-24 23:04:44,550 | INFO | trial=4 epoch=3 train_loss=0.155915 val_mAP50=0.065184 lr=0.00000100
+2026-05-24 23:04:44,603 | INFO | Trial 4 result: {'trial_id': 4, 'best_map50': 0.06518381077643522, 'best_epoch': 3, 'elapsed_sec': 34.69, 'detector': 'fasterrcnn_resnet50_fpn_v2', 'lr': 0.0002, 'weight_decay': 0.0001, 'center_loss_weight': 0.06, 'metric_weight': 0.35, 'proposal_max_per_image': 60, 'score_threshold': 0.03}
+2026-05-24 23:04:44,607 | INFO | Autotune finished. Best={'trial_id': 1, 'best_map50': 0.09671217447031634, 'best_epoch': 3, 'elapsed_sec': 36.98, 'detector': 'fasterrcnn_resnet50_fpn_v2', 'lr': 0.0002, 'weight_decay': 0.0001, 'center_loss_weight': 0.06, 'metric_weight': 0.25, 'proposal_max_per_image': 60, 'score_threshold': 0.08}
+2026-05-24 23:04:44,607 | INFO | Best config saved: /home/heqing/LBB_competition/outputs/autotune_stage4_round2/config.autotuned.yaml

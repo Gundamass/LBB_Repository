@@ -1,0 +1,1165 @@
+{
+  "image_id": "B22009S00_004_4_20240122160018747_000019_1_2_1.jpg",
+  "annotations": [
+    {
+      "label": "scratch",
+      "bbox": [
+        55.81,
+        623.726,
+        124.934,
+        699.092
+      ],
+      "confidence": 0.918045
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        1232.69,
+        274.348,
+        1254.438,
+        289.072
+      ],
+      "confidence": 0.606227
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        939.583,
+        81.146,
+        990.833,
+        132.396
+      ],
+      "confidence": 0.55
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        197.312,
+        162.719,
+        248.562,
+        213.969
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        196.847,
+        163.068,
+        248.097,
+        214.318
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        430.5,
+        237.031,
+        481.75,
+        288.281
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1286.375,
+        627.812,
+        1310.719,
+        679.062
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        78.299,
+        328.854,
+        129.549,
+        380.104
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        457.756,
+        154.915,
+        509.006,
+        206.165
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1115.969,
+        357.469,
+        1167.219,
+        408.719
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        395.906,
+        237.031,
+        447.156,
+        288.281
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        20.5,
+        174.25,
+        71.75,
+        225.5
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        552.219,
+        143.5,
+        603.469,
+        194.75
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        444.594,
+        142.219,
+        495.844,
+        193.469
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1.281,
+        340.812,
+        26.906,
+        392.062
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1162.443,
+        345.938,
+        1213.693,
+        397.188
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        893.031,
+        329.281,
+        944.281,
+        380.531
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        886.625,
+        349.781,
+        937.875,
+        401.031
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        885.227,
+        349.432,
+        936.477,
+        400.682
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        128.125,
+        293.523,
+        179.375,
+        344.773
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        0.0,
+        84.562,
+        32.031,
+        135.812
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        903.281,
+        266.5,
+        954.531,
+        317.75
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        149.906,
+        93.531,
+        201.156,
+        144.781
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        20.5,
+        292.125,
+        71.75,
+        343.375
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1.165,
+        245.767,
+        26.79,
+        297.017
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        768.75,
+        408.835,
+        820.0,
+        460.085
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        0.0,
+        142.361,
+        29.896,
+        193.611
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        871.25,
+        296.111,
+        922.5,
+        347.361
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        289.562,
+        146.062,
+        340.812,
+        197.312
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        133.25,
+        149.906,
+        184.5,
+        201.156
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        748.25,
+        365.156,
+        799.5,
+        416.406
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        294.688,
+        243.438,
+        345.938,
+        294.688
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        336.619,
+        294.688,
+        387.869,
+        345.938
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        338.25,
+        456.125,
+        389.5,
+        507.375
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        29.119,
+        194.517,
+        80.369,
+        245.767
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        201.156,
+        392.062,
+        252.406,
+        443.312
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        294.688,
+        289.562,
+        345.938,
+        340.812
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1272.281,
+        52.531,
+        1310.719,
+        103.781
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        406.156,
+        23.062,
+        457.406,
+        74.312
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1167.102,
+        50.085,
+        1218.352,
+        101.335
+      ],
+      "confidence": 0.549999
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        889.757,
+        119.583,
+        941.007,
+        170.833
+      ],
+      "confidence": 0.549998
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        1241.648,
+        53.58,
+        1292.898,
+        104.83
+      ],
+      "confidence": 0.549998
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        61.215,
+        526.736,
+        112.465,
+        577.986
+      ],
+      "confidence": 0.549989
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        102.5,
+        526.736,
+        153.75,
+        577.986
+      ],
+      "confidence": 0.549989
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        690.451,
+        522.465,
+        741.701,
+        573.715
+      ],
+      "confidence": 0.549989
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        130.972,
+        526.736,
+        182.222,
+        577.986
+      ],
+      "confidence": 0.549988
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        193.611,
+        526.736,
+        244.861,
+        577.986
+      ],
+      "confidence": 0.549988
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        240.59,
+        526.736,
+        291.84,
+        577.986
+      ],
+      "confidence": 0.549988
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        214.965,
+        526.736,
+        266.215,
+        577.986
+      ],
+      "confidence": 0.549988
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        306.076,
+        526.736,
+        357.326,
+        577.986
+      ],
+      "confidence": 0.549987
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        274.757,
+        526.736,
+        326.007,
+        577.986
+      ],
+      "confidence": 0.549987
+    },
+    {
+      "label": "plain particle",
+      "bbox": [
+        147.926,
+        526.477,
+        199.176,
+        577.727
+      ],
+      "confidence": 0.549987
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1286.375,
+        627.812,
+        1310.719,
+        679.062
+      ],
+      "confidence": 0.549983
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        885.227,
+        349.432,
+        936.477,
+        400.682
+      ],
+      "confidence": 0.549983
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        549.773,
+        525.312,
+        601.023,
+        576.562
+      ],
+      "confidence": 0.549979
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        524.148,
+        46.591,
+        575.398
+      ],
+      "confidence": 0.549978
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        563.75,
+        597.917,
+        615.0,
+        649.167
+      ],
+      "confidence": 0.549977
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        590.799,
+        597.917,
+        642.049,
+        649.167
+      ],
+      "confidence": 0.549977
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        457.406,
+        155.031,
+        508.656,
+        206.281
+      ],
+      "confidence": 0.549977
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        294.688,
+        288.864,
+        345.938,
+        340.114
+      ],
+      "confidence": 0.549977
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        437.049,
+        148.056,
+        488.299,
+        199.306
+      ],
+      "confidence": 0.549977
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        294.688,
+        243.438,
+        345.938,
+        294.688
+      ],
+      "confidence": 0.549976
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        289.562,
+        146.062,
+        340.812,
+        197.312
+      ],
+      "confidence": 0.549974
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        894.312,
+        329.281,
+        945.562,
+        380.531
+      ],
+      "confidence": 0.549974
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        30.75,
+        194.75,
+        82.0,
+        246.0
+      ],
+      "confidence": 0.549973
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        404.875,
+        23.062,
+        456.125,
+        74.312
+      ],
+      "confidence": 0.549973
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        392.062,
+        246.0,
+        443.312,
+        297.25
+      ],
+      "confidence": 0.549972
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        133.25,
+        149.906,
+        184.5,
+        201.156
+      ],
+      "confidence": 0.549972
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        128.125,
+        293.523,
+        179.375,
+        344.773
+      ],
+      "confidence": 0.549971
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        21.781,
+        174.25,
+        73.031,
+        225.5
+      ],
+      "confidence": 0.549971
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1241.531,
+        53.812,
+        1292.781,
+        105.062
+      ],
+      "confidence": 0.549971
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1167.361,
+        49.826,
+        1218.611,
+        101.076
+      ],
+      "confidence": 0.549971
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1278.688,
+        49.969,
+        1310.719,
+        101.219
+      ],
+      "confidence": 0.549971
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        19.219,
+        292.125,
+        70.469,
+        343.375
+      ],
+      "confidence": 0.54997
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        336.619,
+        294.688,
+        387.869,
+        345.938
+      ],
+      "confidence": 0.54997
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        552.219,
+        143.5,
+        603.469,
+        194.75
+      ],
+      "confidence": 0.549969
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        197.882,
+        162.292,
+        249.132,
+        213.542
+      ],
+      "confidence": 0.549968
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        430.5,
+        237.031,
+        481.75,
+        288.281
+      ],
+      "confidence": 0.549967
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        78.299,
+        328.854,
+        129.549,
+        380.104
+      ],
+      "confidence": 0.549966
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        146.761,
+        25.625,
+        198.011
+      ],
+      "confidence": 0.549966
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        892.216,
+        118.807,
+        943.466,
+        170.057
+      ],
+      "confidence": 0.549966
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        940.438,
+        82.0,
+        991.688,
+        133.25
+      ],
+      "confidence": 0.54996
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        549.773,
+        525.312,
+        601.023,
+        576.562
+      ],
+      "confidence": 0.549959
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        245.767,
+        25.625,
+        297.017
+      ],
+      "confidence": 0.549959
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        0.0,
+        523.889,
+        46.979,
+        575.139
+      ],
+      "confidence": 0.549959
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        344.773,
+        25.625,
+        396.023
+      ],
+      "confidence": 0.549958
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        326.136,
+        26.79,
+        377.386
+      ],
+      "confidence": 0.549954
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        305.17,
+        526.477,
+        356.42,
+        577.727
+      ],
+      "confidence": 0.549952
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        0.0,
+        83.281,
+        32.031,
+        134.531
+      ],
+      "confidence": 0.549952
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        149.479,
+        93.958,
+        200.729,
+        145.208
+      ],
+      "confidence": 0.549951
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        253.92,
+        526.477,
+        305.17,
+        577.727
+      ],
+      "confidence": 0.549951
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        218.977,
+        526.477,
+        270.227,
+        577.727
+      ],
+      "confidence": 0.549951
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        185.199,
+        526.477,
+        236.449,
+        577.727
+      ],
+      "confidence": 0.54995
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        274.757,
+        526.736,
+        326.007,
+        577.986
+      ],
+      "confidence": 0.54995
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        338.819,
+        455.556,
+        390.069,
+        506.806
+      ],
+      "confidence": 0.54995
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        201.156,
+        392.062,
+        252.406,
+        443.312
+      ],
+      "confidence": 0.549949
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        146.761,
+        526.477,
+        198.011,
+        577.727
+      ],
+      "confidence": 0.549949
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        129.29,
+        526.477,
+        180.54,
+        577.727
+      ],
+      "confidence": 0.549948
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1169.781,
+        339.531,
+        1221.031,
+        390.781
+      ],
+      "confidence": 0.549948
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        768.75,
+        408.576,
+        820.0,
+        459.826
+      ],
+      "confidence": 0.549948
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        102.5,
+        526.477,
+        153.75,
+        577.727
+      ],
+      "confidence": 0.549948
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        690.451,
+        522.465,
+        741.701,
+        573.715
+      ],
+      "confidence": 0.549948
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        749.531,
+        365.156,
+        800.781,
+        416.406
+      ],
+      "confidence": 0.549947
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        871.25,
+        297.25,
+        922.5,
+        348.5
+      ],
+      "confidence": 0.549945
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        1117.535,
+        357.326,
+        1168.785,
+        408.576
+      ],
+      "confidence": 0.549945
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        61.215,
+        526.736,
+        112.465,
+        577.986
+      ],
+      "confidence": 0.549938
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        903.281,
+        266.5,
+        954.531,
+        317.75
+      ],
+      "confidence": 0.549919
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        565.174,
+        597.917,
+        616.424,
+        649.167
+      ],
+      "confidence": 0.54985
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        590.799,
+        597.917,
+        642.049,
+        649.167
+      ],
+      "confidence": 0.549848
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        79.154,
+        642.565,
+        112.475,
+        685.102
+      ],
+      "confidence": 0.516792
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        78.317,
+        648.18,
+        105.564,
+        675.333
+      ],
+      "confidence": 0.375353
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        75.318,
+        644.919,
+        97.526,
+        668.926
+      ],
+      "confidence": 0.360823
+    },
+    {
+      "label": "dirt",
+      "bbox": [
+        1118.749,
+        336.401,
+        1220.427,
+        402.169
+      ],
+      "confidence": 0.35777
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        65.621,
+        626.695,
+        114.21,
+        679.394
+      ],
+      "confidence": 0.321822
+    },
+    {
+      "label": "scratch",
+      "bbox": [
+        779.065,
+        69.374,
+        1015.815,
+        355.233
+      ],
+      "confidence": 0.320473
+    },
+    {
+      "label": "collision",
+      "bbox": [
+        62.154,
+        620.804,
+        79.886,
+        649.733
+      ],
+      "confidence": 0.319664
+    }
+  ]
+}

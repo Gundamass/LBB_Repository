@@ -1,0 +1,22 @@
+2026-05-25 11:15:37,473 | INFO | Logger initialized: /home/heqing/LBB_competition/logs/boost_anchor_sampler_s42/train_20260525_111537.log
+2026-05-25 11:15:38,615 | INFO | Hardware: device=cuda gpu_count=8 gpu_names=['NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000', 'NVIDIA RTX A6000'] total_vram_gb=379.21
+2026-05-25 11:15:38,728 | INFO | Data split: train=132 val=32 | batch=4 workers=12 | defect_imgs=45 clean_imgs=87
+2026-05-25 11:15:38,728 | INFO | Sampling enabled: defect_weight=3.000 clean_weight=1.000 num_samples=160 replacement=True
+2026-05-25 11:15:39,171 | ERROR | Training failed: torchvision.models.detection.faster_rcnn.FasterRCNN() got multiple values for keyword argument 'rpn_anchor_generator'
+2026-05-25 11:15:39,172 | ERROR | Traceback (most recent call last):
+  File "/home/heqing/LBB_competition/train.py", line 193, in main
+    model = build_model(cfg, logger=logger).to(device)
+  File "/home/heqing/LBB_competition/src/model.py", line 397, in build_model
+    model = HybridDefectModel(cfg=cfg, logger=logger)
+  File "/home/heqing/LBB_competition/src/model.py", line 44, in __init__
+    self.detector = self._build_detector(cfg)
+  File "/home/heqing/LBB_competition/src/model.py", line 71, in _build_detector
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(
+  File "/home/heqing/anaconda3/envs/lbb/lib/python3.10/site-packages/torchvision/models/_utils.py", line 142, in wrapper
+    return fn(*args, **kwargs)
+  File "/home/heqing/anaconda3/envs/lbb/lib/python3.10/site-packages/torchvision/models/_utils.py", line 228, in inner_wrapper
+    return builder(*args, **kwargs)
+  File "/home/heqing/anaconda3/envs/lbb/lib/python3.10/site-packages/torchvision/models/detection/faster_rcnn.py", line 649, in fasterrcnn_resnet50_fpn_v2
+    model = FasterRCNN(
+TypeError: torchvision.models.detection.faster_rcnn.FasterRCNN() got multiple values for keyword argument 'rpn_anchor_generator'
+
