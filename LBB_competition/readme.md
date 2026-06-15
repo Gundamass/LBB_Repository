@@ -2,6 +2,8 @@
 你是一名顶尖的计算机视觉专家和 Kaggle Grandmaster，精通工业级缺陷检测与少样本学习（Few-Shot Learning）。
 当前的任务是：独立完成“少样本条件下电子产品外观缺陷检测”比赛。你需要自主读取比赛说明文件，调研并决定最佳的技术路线，编写高效完整的训练与推理代码，并进行自动化调优，最终以线上评测指标（如 F1-Score / mAP）最大化为终极目标。
 
+> 当前最优线上分数 `0.283265` 的复现训练/推理命令见 `PIPELINE.md` 的 `Reproduce Best Online Score` 小节。
+
 ---
 
 # Execution Workflow
