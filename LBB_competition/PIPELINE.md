@@ -1,72 +1,72 @@
-# LBB Competition Pipeline (Scheme C)
+# LBB 比赛方案 C 流程
 
-## Files
-- `config.yaml`: unified configuration (paths, training, inference, hybrid branches)
-- `config.dinov3.yaml`: DINOv3-ConvNeXt + FasterRCNN training config
-- `dataset.py`: entry re-export of dataset module
-- `model.py`: entry re-export of model module
-- `train.py`: training + validation + early stopping + checkpointing
-- `inference.py`: TTA inference + JSON export + ZIP packaging
-- `src/dataset.py`: data parsing/augmentation/loader implementation
-- `src/model.py`: detector + classical proposal + metric rescoring implementation
-- `src/utils.py`: logging, config loader, hardware detection, helpers
+## 文件说明
+- `config.yaml`: 统一配置文件，包含数据路径、训练参数、推理参数和混合分支开关
+- `config.dinov3.yaml`: DINOv3-ConvNeXt + FasterRCNN 训练配置
+- `dataset.py`: 数据集模块入口转发
+- `model.py`: 模型模块入口转发
+- `train.py`: 训练、验证、早停和 checkpoint 保存
+- `inference.py`: TTA 推理、JSON 导出和提交 ZIP 打包
+- `src/dataset.py`: 数据解析、增强和 dataloader 实现
+- `src/model.py`: 检测器、传统候选框分支和 metric rescore 实现
+- `src/utils.py`: 日志、配置加载、硬件检测和辅助函数
 
-## Install
+## 安装依赖
 ```bash
 python3 -m pip install --user -r requirements.txt
 ```
 
-## Train
+## 训练
 ```bash
 python3 train.py --config ./config.yaml
 ```
 
-### Train With DINOv3
-1. Clone DINOv3 repo (only needed once):
+### 使用 DINOv3 训练
+1. 克隆 DINOv3 仓库，只需要执行一次：
 ```bash
 git clone --depth 1 https://github.com/facebookresearch/dinov3.git ./third_party/dinov3
 ```
-2. (Optional but recommended) put official DINOv3 weights path into `config.dinov3.yaml` at `model.dinov3.weights`.
-3. Launch training:
+2. 可选但推荐：把官方 DINOv3 权重路径写入 `config.dinov3.yaml` 的 `model.dinov3.weights`。
+3. 启动训练：
 ```bash
 python3 train.py --config ./config.dinov3.yaml
 ```
 
-## Inference + Submission ZIP
+## 推理并生成提交 ZIP
 ```bash
 python3 inference.py --config ./config.yaml --ckpt ./checkpoints/best_model.pt
 ```
 
-The output ZIP is generated under `outputs/`.
+输出 ZIP 会生成在 `outputs/` 目录下。
 
-## Reproduce Best Online Score
-Current best public submission:
+## 复现当前最优线上分数
+当前已知最优线上提交：
 
-- ZIP name: `少样本条件下电子产品外观缺陷检测_默认团队_方案C_no_classic_thr001_nms0445_ensemble_seed123.zip`
-- Online mAP@0.5: `0.283265`
-- Key inference settings: no classical proposal branch, score threshold `0.01`, class-wise NMS IoU `0.445`, two-checkpoint ensemble, TTA scales `[1.0, 1.1, 0.9]` plus horizontal flip.
+- ZIP 文件名：`少样本条件下电子产品外观缺陷检测_默认团队_方案C_no_classic_thr001_nms0445_ensemble_seed123.zip`
+- 线上 mAP@0.5：`0.283265`
+- 关键推理设置：关闭 classical proposal 分支，置信度阈值 `0.01`，按类别 NMS IoU `0.445`，两个 checkpoint ensemble，TTA 使用尺度 `[1.0, 1.1, 0.9]` 加水平翻转。
 
-Run all commands from `LBB_competition/`:
+下面所有命令都在 `LBB_competition/` 目录下执行：
 
 ```bash
 cd /home/heqing/LBB_competition
 conda activate lbb
 ```
 
-Train the seed-42 model:
+训练 seed-42 模型：
 
 ```bash
 python3 train.py --config ./config.no_classic.thr001_nms0445.ensemble_seed123.yaml
 ```
 
-Keep the seed-42 best checkpoint:
+保存 seed-42 的最优 checkpoint，避免后续训练 seed-123 时覆盖：
 
 ```bash
 mkdir -p ./checkpoints/seed42
 cp ./checkpoints/best_model.pt ./checkpoints/seed42/best_model.pt
 ```
 
-Train a second model with seed 123. This keeps the same architecture/training recipe and only changes the random seed plus checkpoint directory:
+训练第二个 seed-123 模型。这里保持架构和训练策略不变，只修改随机种子和 checkpoint 保存目录：
 
 ```bash
 python3 - <<'PY'
@@ -89,7 +89,7 @@ PY
 python3 train.py --config ./config.no_classic.thr001_nms0445.seed123.train.yaml
 ```
 
-Generate the best-score submission ZIP with the two checkpoints:
+使用两个 checkpoint ensemble 推理，生成当前最优提交 ZIP：
 
 ```bash
 python3 inference.py \
@@ -97,18 +97,18 @@ python3 inference.py \
   --ckpt ./checkpoints/seed42/best_model.pt,./checkpoints/seed123/best_model.pt
 ```
 
-The final file is:
+最终生成的提交文件是：
 
 ```text
 ./outputs/少样本条件下电子产品外观缺陷检测_默认团队_方案C_no_classic_thr001_nms0445_ensemble_seed123.zip
 ```
 
-For reference, the nearby `nms=0.455` config is also tracked because it was explicitly preserved, but its online score was slightly lower (`0.283147`). The current best known config is `config.no_classic.thr001_nms0445.ensemble_seed123.yaml`.
+作为参考，仓库里也保留了 `nms=0.455` 的配置，因为当时明确要求保存；不过它的线上分数略低，是 `0.283147`。当前已知最优配置是 `config.no_classic.thr001_nms0445.ensemble_seed123.yaml`。
 
-## Notes
-- Polygon labels are converted to bounding boxes for detection training.
-- Training includes strong augmentation (mixup + copy-paste + photometric + cutout + flips).
-- Hybrid branch includes:
-  - classical high-frequency proposals
-  - prototype-based metric re-scoring
-- Validation metric is mAP@0.5 (custom implementation aligned with task rule).
+## 备注
+- 训练时会把多边形标注转换成检测框。
+- 训练包含强增强：mixup、copy-paste、颜色增强、cutout 和翻转。
+- Hybrid 分支包含：
+  - 传统高频候选框 proposal
+  - 基于类别原型的 metric re-scoring
+- 验证指标是 mAP@0.5，代码里的自定义实现与比赛规则对齐。
