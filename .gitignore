@@ -1,72 +1,82 @@
-# Ignore everything in this home/workspace repository by default.
+# This git repository lives at /home/heqing, so ignore the whole home
+# directory by default and only expose the LBB project files below.
 *
 .*
 
-# Keep this root ignore file visible.
+# Git metadata files that should be versioned.
 !.gitignore
+!.gitattributes
 
-# Track only the LBB competition project.
-!LBB_competition/
-!LBB_competition/**
+# Project docs and configs at repository root.
+!README.md
+!PIPELINE.md
+!readme.md
+!比赛.md
+!requirements.txt
+!config.yaml
+!config.no_classic.thr001_nms0445.ensemble_seed123.yaml
+!config.no_classic.thr001_nms0455.ensemble_seed123.yaml
 
-# Still ignore generated files inside LBB_competition.
-LBB_competition/__pycache__/
-LBB_competition/**/__pycache__/
-LBB_competition/*.py[cod]
-LBB_competition/**/*.py[cod]
-LBB_competition/.pytest_cache/
-LBB_competition/.mypy_cache/
-LBB_competition/.ruff_cache/
-LBB_competition/.cache/
-LBB_competition/.ipynb_checkpoints/
-LBB_competition/**/.ipynb_checkpoints/
+# Project entry points and utility scripts.
+!dataset.py
+!model.py
+!train.py
+!inference.py
+!evaluate_local_map.py
+!generate_laptop_masks.py
+!generate_sam2_laptop_masks.py
+!postprocess_calibrated.py
+!postprocess_with_laptop_mask.py
+!tune_mask_postprocess.py
 
-LBB_competition/.venv/
-LBB_competition/venv/
-LBB_competition/env/
-LBB_competition/ENV/
+# Source package.
+!src/
+!src/**
+src/__pycache__/
+src/**/__pycache__/
+src/*.py[cod]
+src/**/*.py[cod]
 
-LBB_competition/.idea/
-LBB_competition/.vscode/
-LBB_competition/.fleet/
+# Selected checkpoint tracked via Git LFS.
+!checkpoints/
+!checkpoints/seed123/
+!checkpoints/seed123/best_model.pt
 
-LBB_competition/logs/
-LBB_competition/*.log
-LBB_competition/**/*.log
-LBB_competition/*.pid
-LBB_competition/**/*.pid
-LBB_competition/*.out
-LBB_competition/**/*.out
-LBB_competition/*.err
-LBB_competition/**/*.err
+# Generated/local project artifacts remain ignored.
+outputs/
+logs/
+runs/
+wandb/
+mlruns/
+tensorboard/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+*.log
+*.pid
+*.out
+*.err
 
-LBB_competition/checkpoints/
-LBB_competition/outputs/
-LBB_competition/runs/
-LBB_competition/wandb/
-LBB_competition/mlruns/
-LBB_competition/tensorboard/
+# Data, annotations, third-party repos, and local model assets are not committed.
+初赛数据/
+手标数据/
+masks/
+third_party/
+dinov3/
+sam2_checkpoints/
 
-LBB_competition/*.pt
-LBB_competition/**/*.pt
-LBB_competition/*.pth
-LBB_competition/**/*.pth
-LBB_competition/*.ckpt
-LBB_competition/**/*.ckpt
-LBB_competition/*.safetensors
-LBB_competition/**/*.safetensors
+# Other large weights are ignored unless explicitly allowed above.
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+!checkpoints/seed123/best_model.pt
 
-LBB_competition/.env
-LBB_competition/.env.*
-LBB_competition/*.local
-LBB_competition/**/*.local
-
-LBB_competition/初赛数据/assets/
-LBB_competition/初赛数据/
-LBB_competition/手标数据/
-LBB_competition/masks/
-LBB_competition/config*.yaml
-!LBB_competition/config.no_classic.thr001_nms0445.ensemble_seed123.yaml
-!LBB_competition/config.no_classic.thr001_nms0455.ensemble_seed123.yaml
-LBB_competition/third_party/
-gitignore
+# Secrets and local overrides.
+.env
+.env.*
+*.local

@@ -38,6 +38,10 @@ def load_config(config_path: str) -> Dict:
         ("inference", "output_dir"),
         ("system", "checkpoints_dir"),
         ("system", "logs_dir"),
+        ("mask", "train_dir"),
+        ("mask", "test_dir"),
+        ("sam2", "repo_dir"),
+        ("sam2", "checkpoint"),
     ]
 
     for sec, key in path_keys:
@@ -47,6 +51,12 @@ def load_config(config_path: str) -> Dict:
         p = Path(val)
         if not p.is_absolute():
             cfg[sec][key] = str((base / p).resolve())
+
+    gen_val = cfg.get("mask", {}).get("generator", {}).get("output_dir")
+    if gen_val is not None:
+        p = Path(gen_val)
+        if not p.is_absolute():
+            cfg["mask"]["generator"]["output_dir"] = str((base / p).resolve())
 
     return cfg
 

@@ -1,12 +1,18 @@
-from typing import Dict, List, Optional
+import importlib
+import sys
+from collections import OrderedDict
+from pathlib import Path
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.ops.feature_pyramid_network import FeaturePyramidNetwork, LastLevelMaxPool
 from torchvision.ops import nms
 
 
@@ -31,6 +37,178 @@ class PatchEmbedder(nn.Module):
         return z
 
 
+class DINOv3RoIEmbedder(nn.Module):
+    """RoI embedder based on DINOv3 class-token features."""
+
+    def __init__(
+        self,
+        repo_dir: str,
+        model_name: str = "dinov3_vits16",
+        weights: Optional[str] = None,
+        pretrained: bool = True,
+        check_hash: bool = False,
+        input_size: int = 224,
+        out_dim: int = 128,
+        freeze_backbone: bool = True,
+    ):
+        super().__init__()
+        self.repo_dir = str(Path(repo_dir).expanduser().resolve())
+        self.model_name = str(model_name)
+        self.input_size = int(input_size)
+        self.freeze_backbone = bool(freeze_backbone)
+
+        repo_root = str(Path(self.repo_dir).resolve())
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+
+        try:
+            backbones = importlib.import_module("dinov3.hub.backbones")
+        except Exception as exc:
+            raise RuntimeError(
+                "Failed to import `dinov3.hub.backbones` for DINOv3 metric embedder."
+            ) from exc
+
+        if not hasattr(backbones, self.model_name):
+            raise ValueError(
+                f"DINOv3 metric model `{self.model_name}` not found in dinov3.hub.backbones."
+            )
+        backbone_ctor = getattr(backbones, self.model_name)
+
+        ctor_kwargs = {"pretrained": bool(pretrained)}
+        if weights is not None and str(weights).strip():
+            ctor_kwargs["pretrained"] = True
+            ctor_kwargs["weights"] = str(weights)
+        if "convnext" not in self.model_name and check_hash:
+            ctor_kwargs["check_hash"] = True
+
+        try:
+            self.backbone = backbone_ctor(**ctor_kwargs)
+        except Exception as exc:
+            hint = (
+                "Failed to load DINOv3 metric backbone. "
+                "If network download is blocked, set "
+                "`hybrid.metric_embedder.dinov3.weights` to a local .pth checkpoint path."
+            )
+            raise RuntimeError(hint) from exc
+        self.backbone.eval()
+        if self.freeze_backbone:
+            for p in self.backbone.parameters():
+                p.requires_grad = False
+
+        self.register_buffer(
+            "pixel_mean",
+            torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(1, 3, 1, 1),
+        )
+        self.register_buffer(
+            "pixel_std",
+            torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 1, 1),
+        )
+
+        with torch.no_grad():
+            dummy = torch.zeros((1, 3, self.input_size, self.input_size), dtype=torch.float32)
+            raw = self._forward_backbone(dummy)
+            raw_dim = int(raw.shape[-1])
+
+        self.raw_dim = raw_dim
+        self.out_dim = int(out_dim)
+        if self.out_dim != self.raw_dim:
+            self.proj = nn.Linear(self.raw_dim, self.out_dim, bias=False)
+        else:
+            self.proj = nn.Identity()
+
+    def _extract_cls_token(self, out) -> torch.Tensor:
+        if isinstance(out, dict):
+            if "x_norm_clstoken" not in out:
+                raise RuntimeError("DINOv3 output dict missing `x_norm_clstoken`.")
+            feat = out["x_norm_clstoken"]
+        elif isinstance(out, torch.Tensor):
+            feat = out
+        elif isinstance(out, (list, tuple)) and len(out) > 0 and isinstance(out[0], dict):
+            feat = out[0].get("x_norm_clstoken", None)
+            if feat is None:
+                raise RuntimeError("DINOv3 output list item missing `x_norm_clstoken`.")
+        else:
+            raise RuntimeError(f"Unsupported DINOv3 output type: {type(out)}")
+
+        if feat.dim() == 1:
+            feat = feat.unsqueeze(0)
+        if feat.dim() != 2:
+            raise RuntimeError(f"Expected cls token shape [B, D], got {tuple(feat.shape)}")
+        return feat
+
+    def _forward_backbone(self, x: torch.Tensor) -> torch.Tensor:
+        if self.freeze_backbone:
+            with torch.no_grad():
+                out = self.backbone(x, is_training=True)
+        else:
+            out = self.backbone(x, is_training=True)
+        feat = self._extract_cls_token(out)
+        return F.normalize(feat, dim=-1)
+
+    def forward(self, patches: torch.Tensor) -> torch.Tensor:
+        if patches.dim() != 4:
+            raise ValueError(f"Expected patches [B,3,H,W], got {tuple(patches.shape)}")
+
+        x = patches.float().clamp(0.0, 1.0)
+        if x.shape[-2] != self.input_size or x.shape[-1] != self.input_size:
+            x = F.interpolate(
+                x,
+                size=(self.input_size, self.input_size),
+                mode="bilinear",
+                align_corners=False,
+            )
+
+        x = (x - self.pixel_mean) / self.pixel_std
+        feat = self._forward_backbone(x)
+        feat = self.proj(feat)
+        return F.normalize(feat, dim=-1)
+
+
+class DinoV3ConvNeXtFPNBackbone(nn.Module):
+    """DINOv3 ConvNeXt backbone wrapped by an FPN for Faster R-CNN."""
+
+    def __init__(
+        self,
+        body: nn.Module,
+        out_indices: Sequence[int],
+        fpn_out_channels: int = 256,
+        norm_intermediate: bool = False,
+    ):
+        super().__init__()
+        self.body = body
+        self.out_indices = [int(i) for i in out_indices]
+        self.norm_intermediate = bool(norm_intermediate)
+
+        if not hasattr(self.body, "embed_dims"):
+            raise ValueError("DINOv3 ConvNeXt backbone must expose `embed_dims`.")
+
+        embed_dims = list(self.body.embed_dims)
+        for i in self.out_indices:
+            if i < 0 or i >= len(embed_dims):
+                raise ValueError(
+                    f"Invalid `out_indices` value {i}. "
+                    f"Expected range [0, {len(embed_dims) - 1}]."
+                )
+
+        in_channels_list = [int(embed_dims[i]) for i in self.out_indices]
+        self.fpn = FeaturePyramidNetwork(
+            in_channels_list=in_channels_list,
+            out_channels=int(fpn_out_channels),
+            extra_blocks=LastLevelMaxPool(),
+        )
+        self.out_channels = int(fpn_out_channels)
+
+    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+        features = self.body.get_intermediate_layers(
+            x,
+            n=self.out_indices,
+            reshape=True,
+            norm=self.norm_intermediate,
+        )
+        feat_dict = OrderedDict((str(i), feat) for i, feat in enumerate(features))
+        return self.fpn(feat_dict)
+
+
 class HybridDefectModel(nn.Module):
     def __init__(self, cfg: Dict, logger=None):
         super().__init__()
@@ -47,11 +225,47 @@ class HybridDefectModel(nn.Module):
         self.enable_metric_rescore = bool(cfg["hybrid"].get("enable_metric_rescore", True))
         self.metric_weight = float(cfg["hybrid"].get("metric_weight", 0.25))
         self.temperature = float(cfg["hybrid"].get("metric_temperature", 0.2))
+        metric_cfg = cfg["hybrid"].get("metric_embedder", {})
+        metric_name = str(metric_cfg.get("name", "cnn")).lower()
+        self.metric_embedder_name = metric_name
 
-        self.embedder = PatchEmbedder(emb_dim=128)
+        if metric_name == "dinov3":
+            dino_cfg = metric_cfg.get("dinov3", {})
+            dino_repo = dino_cfg.get("repo_dir", cfg["model"].get("dinov3", {}).get("repo_dir", "./third_party/dinov3"))
+            dino_model_name = dino_cfg.get("model_name", "dinov3_vits16")
+            dino_weights = dino_cfg.get("weights", None)
+            dino_pretrained = bool(dino_cfg.get("pretrained", True))
+            dino_check_hash = bool(dino_cfg.get("check_hash", False))
+            dino_input_size = int(metric_cfg.get("input_size", 224))
+            dino_out_dim = int(metric_cfg.get("out_dim", 128))
+            dino_freeze = bool(dino_cfg.get("freeze_backbone", True))
+
+            self.embedder = DINOv3RoIEmbedder(
+                repo_dir=dino_repo,
+                model_name=dino_model_name,
+                weights=dino_weights,
+                pretrained=dino_pretrained,
+                check_hash=dino_check_hash,
+                input_size=dino_input_size,
+                out_dim=dino_out_dim,
+                freeze_backbone=dino_freeze,
+            )
+        else:
+            emb_dim = int(metric_cfg.get("out_dim", 128))
+            self.embedder = PatchEmbedder(emb_dim=emb_dim)
+
+        default_trainable = (self.metric_embedder_name == "cnn")
+        self.metric_embedder_trainable = bool(metric_cfg.get("trainable", default_trainable))
+        if not self.metric_embedder_trainable:
+            self.embedder.eval()
+            for p in self.embedder.parameters():
+                p.requires_grad = False
+
+        self.metric_crop_size = int(metric_cfg.get("crop_size", getattr(self.embedder, "input_size", 64)))
+        metric_dim = int(getattr(self.embedder, "out_dim", 128))
 
         # index 0 is background and is not used for prototype matching
-        self.register_buffer("prototype_bank", torch.zeros(self.num_classes, 128))
+        self.register_buffer("prototype_bank", torch.zeros(self.num_classes, metric_dim))
         self.register_buffer("prototype_count", torch.zeros(self.num_classes))
 
     def _build_detector(self, cfg: Dict):
@@ -60,7 +274,16 @@ class HybridDefectModel(nn.Module):
         score_thr = float(cfg["model"].get("score_threshold", 0.05))
         nms_thr = float(cfg["model"].get("nms_iou_threshold", 0.5))
         det_per_img = int(cfg["model"].get("detections_per_img", 300))
-        det_kwargs = self._collect_detector_kwargs(cfg["model"])
+        det_kwargs = self._collect_detector_kwargs(cfg["model"], include_anchor=False)
+
+        if name == "fasterrcnn_dinov3_convnext_tiny":
+            return self._build_dinov3_fasterrcnn(cfg, backbone_name="dinov3_convnext_tiny")
+        if name == "fasterrcnn_dinov3_convnext_small":
+            return self._build_dinov3_fasterrcnn(cfg, backbone_name="dinov3_convnext_small")
+        if name == "fasterrcnn_dinov3_convnext_base":
+            return self._build_dinov3_fasterrcnn(cfg, backbone_name="dinov3_convnext_base")
+        if name == "fasterrcnn_dinov3_convnext_large":
+            return self._build_dinov3_fasterrcnn(cfg, backbone_name="dinov3_convnext_large")
 
         if name == "fasterrcnn_resnet50_fpn_v2":
             if pretrained:
@@ -130,7 +353,7 @@ class HybridDefectModel(nn.Module):
 
         return AnchorGenerator(sizes=sizes, aspect_ratios=ratios)
 
-    def _collect_detector_kwargs(self, model_cfg: Dict) -> Dict:
+    def _collect_detector_kwargs(self, model_cfg: Dict, include_anchor: bool = False) -> Dict:
         kwargs = {}
 
         int_keys = [
@@ -163,13 +386,110 @@ class HybridDefectModel(nn.Module):
             if k in model_cfg and model_cfg[k] is not None:
                 kwargs[k] = float(model_cfg[k])
 
-        anchor_gen = self._build_anchor_generator(model_cfg)
-        if anchor_gen is not None:
-            kwargs["rpn_anchor_generator"] = anchor_gen
+        if include_anchor:
+            anchor_gen = self._build_anchor_generator(model_cfg)
+            if anchor_gen is not None:
+                kwargs["rpn_anchor_generator"] = anchor_gen
 
         return kwargs
 
-    def _crop_box(self, image: torch.Tensor, box: torch.Tensor, out_size: int = 64) -> Optional[torch.Tensor]:
+    def _import_dinov3_backbones(self, repo_dir: str):
+        repo_path = Path(repo_dir).expanduser().resolve()
+        if not repo_path.exists():
+            raise FileNotFoundError(
+                f"DINOv3 repo not found: {repo_path}. "
+                "Please clone https://github.com/facebookresearch/dinov3 "
+                "or set `model.dinov3.repo_dir` correctly."
+            )
+
+        repo_root = str(repo_path)
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+
+        try:
+            backbones = importlib.import_module("dinov3.hub.backbones")
+        except Exception as exc:
+            raise RuntimeError(
+                "Failed to import `dinov3.hub.backbones`. "
+                "Please ensure DINOv3 repo and dependencies are available."
+            ) from exc
+        return backbones
+
+    def _build_dinov3_fasterrcnn(self, cfg: Dict, backbone_name: str):
+        model_cfg = cfg["model"]
+        dino_cfg = model_cfg.get("dinov3", {})
+
+        repo_dir = dino_cfg.get("repo_dir", "./third_party/dinov3")
+        backbones = self._import_dinov3_backbones(repo_dir)
+
+        if not hasattr(backbones, backbone_name):
+            raise ValueError(
+                f"Backbone `{backbone_name}` not found in DINOv3 hub backbones."
+            )
+
+        backbone_ctor = getattr(backbones, backbone_name)
+        use_pretrained = bool(model_cfg.get("pretrained", True))
+        weights_spec = dino_cfg.get("weights", None)
+        check_hash = bool(dino_cfg.get("check_hash", False))
+
+        try:
+            if use_pretrained and weights_spec:
+                dino_body = backbone_ctor(
+                    pretrained=True,
+                    weights=str(weights_spec),
+                    check_hash=check_hash,
+                )
+            else:
+                dino_body = backbone_ctor(pretrained=False)
+        except Exception as exc:
+            hint = (
+                "If you want pretrained DINOv3 weights, download the checkpoint URL/path "
+                "from the official DINOv3 access page and set `model.dinov3.weights`."
+            )
+            raise RuntimeError(f"Failed to build DINOv3 backbone: {exc}. {hint}") from exc
+
+        out_indices = dino_cfg.get("out_indices", [0, 1, 2, 3])
+        fpn_out_channels = int(dino_cfg.get("fpn_out_channels", 256))
+        norm_intermediate = bool(dino_cfg.get("norm_intermediate", False))
+        backbone = DinoV3ConvNeXtFPNBackbone(
+            body=dino_body,
+            out_indices=out_indices,
+            fpn_out_channels=fpn_out_channels,
+            norm_intermediate=norm_intermediate,
+        )
+
+        det_kwargs = self._collect_detector_kwargs(model_cfg, include_anchor=False)
+
+        # Build anchors for FPN feature levels (including last pooled level).
+        anchor_sizes_cfg = model_cfg.get("anchor_sizes", [[8], [16], [32], [64], [128]])
+        anchor_sizes = tuple(tuple(int(max(1, x)) for x in level) for level in anchor_sizes_cfg)
+
+        aspect_ratios_cfg = model_cfg.get("anchor_aspect_ratios", [[0.5, 1.0, 2.0]])
+        aspect_ratios = tuple(tuple(float(r) for r in level) for level in aspect_ratios_cfg)
+        if len(aspect_ratios) == 1:
+            aspect_ratios = aspect_ratios * len(anchor_sizes)
+        if len(aspect_ratios) != len(anchor_sizes):
+            raise ValueError(
+                f"anchor_aspect_ratios length ({len(aspect_ratios)}) must match "
+                f"anchor_sizes length ({len(anchor_sizes)}), or provide one list to broadcast."
+            )
+
+        rpn_anchor_generator = AnchorGenerator(
+            sizes=anchor_sizes,
+            aspect_ratios=aspect_ratios,
+        )
+
+        model = FasterRCNN(
+            backbone=backbone,
+            num_classes=self.num_classes,
+            rpn_anchor_generator=rpn_anchor_generator,
+            **det_kwargs,
+        )
+        return model
+
+    def _crop_box(self, image: torch.Tensor, box: torch.Tensor, out_size: Optional[int] = None) -> Optional[torch.Tensor]:
+        if out_size is None:
+            out_size = self.metric_crop_size
         h, w = image.shape[1], image.shape[2]
         x1, y1, x2, y2 = box.tolist()
         x1 = int(max(0, min(w - 1, x1)))
@@ -188,6 +508,14 @@ class HybridDefectModel(nn.Module):
         patch = F.interpolate(patch, size=(out_size, out_size), mode="bilinear", align_corners=False)
         return patch
 
+    def _embed_patch(self, patch: torch.Tensor, allow_grad: bool = False) -> torch.Tensor:
+        if allow_grad and self.metric_embedder_trainable:
+            emb = self.embedder(patch)
+        else:
+            with torch.no_grad():
+                emb = self.embedder(patch)
+        return emb.squeeze(0)
+
     @torch.no_grad()
     def update_prototypes(self, images: List[torch.Tensor], targets: List[Dict]) -> None:
         self.embedder.eval()
@@ -203,7 +531,7 @@ class HybridDefectModel(nn.Module):
                 patch = self._crop_box(img.to(device), box.to(device))
                 if patch is None:
                     continue
-                emb = self.embedder(patch).squeeze(0)
+                emb = self._embed_patch(patch, allow_grad=False)
                 old = self.prototype_bank[cls]
                 cnt = self.prototype_count[cls].item()
                 new_proto = (old * cnt + emb) / (cnt + 1.0)
@@ -216,6 +544,9 @@ class HybridDefectModel(nn.Module):
         Uses current prototype bank as class centers and penalizes (1 - cosine).
         """
         device = next(self.parameters()).device
+        if not self.metric_embedder_trainable:
+            return torch.zeros((), dtype=torch.float32, device=device)
+
         losses: List[torch.Tensor] = []
         self.embedder.train()
 
@@ -232,7 +563,7 @@ class HybridDefectModel(nn.Module):
                 patch = self._crop_box(img.to(device), box.to(device))
                 if patch is None:
                     continue
-                emb = self.embedder(patch).squeeze(0)
+                emb = self._embed_patch(patch, allow_grad=True)
                 proto = self.prototype_bank[cls].detach()
                 cos = torch.sum(emb * proto)
                 losses.append(1.0 - cos)
@@ -300,7 +631,7 @@ class HybridDefectModel(nn.Module):
             patch = self._crop_box(image, boxes[i])
             if patch is None:
                 continue
-            emb = self.embedder(patch.to(image.device)).squeeze(0)
+            emb = self._embed_patch(patch.to(image.device), allow_grad=False)
             proto = self.prototype_bank[cls]
             sim = torch.sum(emb * proto)
             sim = torch.clamp((sim + 1.0) * 0.5, 0.0, 1.0)
@@ -343,7 +674,7 @@ class HybridDefectModel(nn.Module):
             patch = self._crop_box(image, box)
             if patch is None:
                 continue
-            emb = self.embedder(patch.to(image.device)).squeeze(0)
+            emb = self._embed_patch(patch.to(image.device), allow_grad=False)
 
             sims = []
             for cls in valid_cls:
@@ -397,10 +728,12 @@ def build_model(cfg: Dict, logger=None) -> HybridDefectModel:
     model = HybridDefectModel(cfg=cfg, logger=logger)
     if logger is not None:
         logger.info(
-            "Model built: detector=%s classes=%d hybrid(proposal=%s metric=%s)",
+            "Model built: detector=%s classes=%d hybrid(proposal=%s metric=%s embedder=%s trainable=%s)",
             cfg["model"]["detector_name"],
             model.num_classes,
             model.enable_classical_proposals,
             model.enable_metric_rescore,
+            model.metric_embedder_name,
+            model.metric_embedder_trainable,
         )
     return model
