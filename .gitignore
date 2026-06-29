@@ -13,7 +13,16 @@
 !readme.md
 !比赛.md
 !requirements.txt
+!requirements.submit.txt
+!CURRENT_SOLUTION.md
+!NOWCODER_LOGIN_EXPORT.md
 !config.yaml
+!config.fcos.yaml
+!config.fasterrcnn.legacy.yaml
+!config.yolo26.yaml
+!config.yolo26s.realpastev23.yaml
+!config.tile_yolo26.yaml
+!config.tile_yolo26s.realpastev23.yaml
 !config.no_classic.thr001_nms0445.ensemble_seed123.yaml
 !config.no_classic.thr001_nms0455.ensemble_seed123.yaml
 
@@ -28,6 +37,14 @@
 !postprocess_calibrated.py
 !postprocess_with_laptop_mask.py
 !tune_mask_postprocess.py
+
+# Tool scripts.
+!tools/
+!tools/**
+tools/__pycache__/
+tools/**/__pycache__/
+tools/*.py[cod]
+tools/**/*.py[cod]
 
 # Source package.
 !src/

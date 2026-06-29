@@ -303,22 +303,27 @@ class HybridDefectModel(nn.Module):
             model.roi_heads.detections_per_img = det_per_img
             return model
 
+        if name == "fcos_resnet50_fpn":
+            return self._build_fcos_resnet50_fpn(cfg)
+
         if name == "retinanet_resnet50_fpn_v2":
-            if pretrained:
-                # For custom num_classes we cannot directly use COCO full-head weights.
-                # Use ImageNet backbone init instead.
-                weights = None
-                weights_backbone = torchvision.models.ResNet50_Weights.IMAGENET1K_V2
-            else:
-                weights = None
-                weights_backbone = None
+            retinanet_kwargs = self._collect_one_stage_detector_kwargs(cfg["model"])
+            weights = None
+            weights_backbone = self._default_resnet50_weights() if pretrained else None
 
             model = torchvision.models.detection.retinanet_resnet50_fpn_v2(
                 weights=weights,
                 weights_backbone=weights_backbone,
                 num_classes=self.num_classes,
-                **det_kwargs,
+                **retinanet_kwargs,
             )
+            pretrained_source = str(cfg["model"].get("pretrained_source", "imagenet")).lower()
+            if pretrained and pretrained_source == "coco":
+                self._try_load_matching_weights(
+                    model,
+                    torchvision.models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT,
+                    context="RetinaNet COCO partial init",
+                )
             if hasattr(model, "score_thresh"):
                 model.score_thresh = score_thr
             if hasattr(model, "nms_thresh"):
@@ -328,6 +333,96 @@ class HybridDefectModel(nn.Module):
             return model
 
         raise ValueError(f"Unsupported detector: {name}")
+
+    def _default_resnet50_weights(self):
+        weights_enum = torchvision.models.ResNet50_Weights
+        return getattr(weights_enum, "IMAGENET1K_V2", weights_enum.IMAGENET1K_V1)
+
+    def _try_load_matching_weights(self, model: nn.Module, weights, context: str) -> None:
+        """Load only tensors whose names and shapes match the current detector.
+
+        This lets us reuse COCO-trained backbone/FPN/regression weights while keeping
+        our small custom classification head shape.
+        """
+        try:
+            source_state = weights.get_state_dict(progress=True, check_hash=True)
+        except Exception as exc:
+            if self.logger is not None:
+                self.logger.warning("%s skipped: failed to load weights: %s", context, exc)
+            return
+
+        target_state = model.state_dict()
+        compatible = {
+            k: v
+            for k, v in source_state.items()
+            if k in target_state and tuple(target_state[k].shape) == tuple(v.shape)
+        }
+        skipped = len(source_state) - len(compatible)
+        model.load_state_dict(compatible, strict=False)
+
+        if self.logger is not None:
+            self.logger.info(
+                "%s loaded %d tensors, skipped %d shape-mismatched tensors",
+                context,
+                len(compatible),
+                skipped,
+            )
+
+    def _collect_one_stage_detector_kwargs(self, model_cfg: Dict) -> Dict:
+        kwargs = {}
+
+        int_map = {
+            "min_size": "min_size",
+            "max_size": "max_size",
+            "topk_candidates": "topk_candidates",
+            "detections_per_img": "detections_per_img",
+        }
+
+        for src, dst in int_map.items():
+            if src in model_cfg and model_cfg[src] is not None:
+                kwargs[dst] = int(model_cfg[src])
+
+        if "score_threshold" in model_cfg:
+            kwargs["score_thresh"] = float(model_cfg["score_threshold"])
+        elif "score_thresh" in model_cfg:
+            kwargs["score_thresh"] = float(model_cfg["score_thresh"])
+
+        if "nms_iou_threshold" in model_cfg:
+            kwargs["nms_thresh"] = float(model_cfg["nms_iou_threshold"])
+        elif "nms_thresh" in model_cfg:
+            kwargs["nms_thresh"] = float(model_cfg["nms_thresh"])
+
+        return kwargs
+
+    def _build_fcos_resnet50_fpn(self, cfg: Dict):
+        model_cfg = cfg["model"]
+        pretrained = bool(model_cfg.get("pretrained", True))
+        pretrained_source = str(model_cfg.get("pretrained_source", "coco")).lower()
+        kwargs = self._collect_one_stage_detector_kwargs(model_cfg)
+        if "center_sampling_radius" in model_cfg and model_cfg["center_sampling_radius"] is not None:
+            kwargs["center_sampling_radius"] = float(model_cfg["center_sampling_radius"])
+
+        weights = None
+        # Start from ImageNet backbone weights, then optionally overlay matching
+        # COCO detector tensors. If COCO weights are unavailable, this still
+        # avoids fully-random initialization on few-shot data.
+        weights_backbone = self._default_resnet50_weights() if pretrained else None
+
+        model = torchvision.models.detection.fcos_resnet50_fpn(
+            weights=weights,
+            weights_backbone=weights_backbone,
+            num_classes=self.num_classes,
+            **kwargs,
+        )
+
+        if pretrained and pretrained_source == "coco":
+            self._try_load_matching_weights(
+                model,
+                torchvision.models.detection.FCOS_ResNet50_FPN_Weights.DEFAULT,
+                context="FCOS COCO partial init",
+            )
+
+        return model
 
     def _build_anchor_generator(self, model_cfg: Dict) -> Optional[AnchorGenerator]:
         sizes_cfg = model_cfg.get("anchor_sizes")

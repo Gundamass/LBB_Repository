@@ -1,7 +1,7 @@
 import argparse
 import traceback
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from torch.cuda.amp import GradScaler, autocast
@@ -20,16 +20,81 @@ from src.utils import (
 )
 
 
-def strip_targets_for_model(targets: List[Dict], device: torch.device) -> List[Dict]:
+def unwrap_model(model: torch.nn.Module) -> torch.nn.Module:
+    if isinstance(model, torch.nn.DataParallel):
+        return model.module
+    return model
+
+
+class DetectionDataParallel(torch.nn.DataParallel):
+    """DataParallel variant that splits detection batches by image list item.
+
+    The default PyTorch scatter recursively chunks every tensor. For detection
+    inputs shaped as List[Tensor[C,H,W]], that would incorrectly split channels.
+    This wrapper keeps each image intact and distributes whole samples.
+    """
+
+    @staticmethod
+    def _move_target(target: Dict, device: torch.device) -> Dict:
+        return {
+            k: (v.to(device, non_blocking=True) if torch.is_tensor(v) else v)
+            for k, v in target.items()
+        }
+
+    @staticmethod
+    def _chunk_bounds(n_items: int, n_chunks: int) -> List[Tuple[int, int]]:
+        n_chunks = max(1, min(n_chunks, n_items))
+        base = n_items // n_chunks
+        rem = n_items % n_chunks
+        bounds = []
+        start = 0
+        for idx in range(n_chunks):
+            size = base + (1 if idx < rem else 0)
+            end = start + size
+            bounds.append((start, end))
+            start = end
+        return bounds
+
+    def scatter(self, inputs, kwargs, device_ids):
+        if not inputs:
+            return super().scatter(inputs, kwargs, device_ids)
+
+        images = inputs[0]
+        targets = inputs[1] if len(inputs) > 1 else None
+        if not isinstance(images, list):
+            return super().scatter(inputs, kwargs, device_ids)
+
+        bounds = self._chunk_bounds(len(images), len(device_ids))
+        scattered_inputs = []
+        scattered_kwargs = []
+        for dev_id, (start, end) in zip(device_ids, bounds):
+            device = torch.device("cuda", int(dev_id))
+            image_chunk = [img.to(device, non_blocking=True) for img in images[start:end]]
+            if targets is None:
+                scattered_inputs.append((image_chunk,))
+            else:
+                target_chunk = [self._move_target(t, device) for t in targets[start:end]]
+                scattered_inputs.append((image_chunk, target_chunk))
+            scattered_kwargs.append(dict(kwargs))
+
+        return tuple(scattered_inputs), tuple(scattered_kwargs)
+
+
+def strip_targets_for_model(targets: List[Dict], device: Optional[torch.device]) -> List[Dict]:
     out = []
     for t in targets:
+        def maybe_to(x):
+            if device is None:
+                return x
+            return x.to(device)
+
         out.append(
             {
-                "boxes": t["boxes"].to(device),
-                "labels": t["labels"].to(device),
-                "image_id": t["image_id"].to(device),
-                "area": t["area"].to(device),
-                "iscrowd": t["iscrowd"].to(device),
+                "boxes": maybe_to(t["boxes"]),
+                "labels": maybe_to(t["labels"]),
+                "image_id": maybe_to(t["image_id"]),
+                "area": maybe_to(t["area"]),
+                "iscrowd": maybe_to(t["iscrowd"]),
             }
         )
     return out
@@ -131,6 +196,7 @@ class EarlyStopper:
 
 
 def validate(model, loader, device, amp_enabled: bool, logger):
+    model = unwrap_model(model)
     model.eval()
 
     pred_records = []
@@ -158,7 +224,7 @@ def validate(model, loader, device, amp_enabled: bool, logger):
                 }
             )
 
-    metrics = evaluate_map50(pred_records, gt_records, num_classes=model.num_classes)
+    metrics = evaluate_map50(pred_records, gt_records, num_classes=unwrap_model(model).num_classes)
     logger.info("Validation mAP@0.5 = %.6f", metrics["mAP50"])
     return metrics
 
@@ -191,6 +257,30 @@ def main(config_path: str):
 
         train_loader, val_loader, train_ds, val_ds = build_dataloaders(cfg, hw, logger=logger)
         model = build_model(cfg, logger=logger).to(device)
+
+        init_checkpoint = cfg["training"].get("init_checkpoint")
+        if init_checkpoint:
+            init_path = Path(str(init_checkpoint)).expanduser()
+            if not init_path.exists():
+                raise FileNotFoundError(f"training.init_checkpoint not found: {init_path}")
+            init_ckpt = torch.load(init_path, map_location=device)
+            state = init_ckpt.get("model_state", init_ckpt)
+            missing, unexpected = model.load_state_dict(state, strict=False)
+            logger.info(
+                "Initialized model from %s | missing=%d unexpected=%d",
+                init_path,
+                len(missing),
+                len(unexpected),
+            )
+
+        use_data_parallel = (
+            bool(cfg["training"].get("data_parallel", False))
+            and device.type == "cuda"
+            and torch.cuda.device_count() > 1
+        )
+        if use_data_parallel:
+            model = DetectionDataParallel(model)
+            logger.info("DataParallel enabled over %d visible CUDA devices", torch.cuda.device_count())
 
         params = [p for p in model.parameters() if p.requires_grad]
         optimizer = torch.optim.AdamW(
@@ -229,16 +319,24 @@ def main(config_path: str):
 
             pbar = tqdm(train_loader, desc=f"train epoch {epoch}/{epochs}", leave=False)
             for images, targets in pbar:
-                images = [img.to(device) for img in images]
-                model_targets = strip_targets_for_model(targets, device=device)
+                if use_data_parallel:
+                    model_images = images
+                    model_targets = strip_targets_for_model(targets, device=None)
+                else:
+                    model_images = [img.to(device, non_blocking=True) for img in images]
+                    model_targets = strip_targets_for_model(targets, device=device)
 
                 optimizer.zero_grad(set_to_none=True)
 
                 with autocast(enabled=amp_enabled):
-                    loss_dict = model(images, model_targets)
+                    loss_dict = model(model_images, model_targets)
+                    loss_dict = {
+                        k: (v.mean() if torch.is_tensor(v) and v.ndim > 0 else v)
+                        for k, v in loss_dict.items()
+                    }
                     det_loss = sum(loss_dict.values())
                     if center_w > 0:
-                        center_loss = model.compute_center_loss(images, model_targets)
+                        center_loss = unwrap_model(model).compute_center_loss(model_images, model_targets)
                         loss = det_loss + center_w * center_loss
                     else:
                         center_loss = torch.zeros((), device=device)
@@ -252,7 +350,7 @@ def main(config_path: str):
 
                 # Update class prototypes with GT patches.
                 with torch.no_grad():
-                    model.update_prototypes(images, model_targets)
+                    unwrap_model(model).update_prototypes(model_images, model_targets)
 
                 loss_running += float(loss.item())
                 pbar.set_postfix(
@@ -265,14 +363,14 @@ def main(config_path: str):
             train_loss = loss_running / max(len(train_loader), 1)
             logger.info("Epoch %d train_loss=%.6f lr=%.8f", epoch, train_loss, optimizer.param_groups[0]["lr"])
 
-            metrics = validate(model, val_loader, device, amp_enabled, logger)
+            metrics = validate(unwrap_model(model), val_loader, device, amp_enabled, logger)
             val_map = float(metrics["mAP50"])
 
             if val_map > best_map:
                 best_map = val_map
                 ckpt = {
                     "epoch": epoch,
-                    "model_state": model.state_dict(),
+                    "model_state": unwrap_model(model).state_dict(),
                     "optimizer_state": optimizer.state_dict(),
                     "scheduler_state": scheduler.state_dict(),
                     "best_map": best_map,
@@ -284,7 +382,7 @@ def main(config_path: str):
             torch.save(
                 {
                     "epoch": epoch,
-                    "model_state": model.state_dict(),
+                    "model_state": unwrap_model(model).state_dict(),
                     "optimizer_state": optimizer.state_dict(),
                     "scheduler_state": scheduler.state_dict(),
                     "best_map": best_map,

@@ -1,0 +1,36 @@
+seed: 42
+data:
+  root_dir: ./初赛数据
+  train_pos_dir: ./初赛数据/训练集/正样本
+  train_neg_dir: ./初赛数据/训练集/负样本
+  test_dir: ./初赛数据/测试集/image
+  val_ratio: 0.2
+  min_box_size: 2.0
+classes:
+  background: 0
+  plain particle: 1
+  dirt: 2
+  scratch: 3
+  collision: 4
+yolo:
+  data_dir: ./yolo_data
+  model: yolo26s.pt
+  imgsz: 1536
+  epochs: 200
+  batch: 8
+  workers: 8
+  patience: 40
+  device: 0,1,2,3
+  project: ./runs/yolo26
+  name: yolo26s_img1536
+  exist_ok: true
+  plots: true
+  cache: false
+  conf: 0.001
+  iou: 0.5
+  max_det: 500
+  predict_batch: 4
+  augment: false
+inference:
+  output_dir: ./outputs
+  zip_name: 少样本条件下电子产品外观缺陷检测_默认团队_方案C_yolo26s_img1536.zip

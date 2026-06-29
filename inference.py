@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import traceback
 from pathlib import Path
 from typing import Dict, List
@@ -220,7 +221,11 @@ def main(config_path: str, ckpt_path: str):
 
         output_root = Path(cfg["inference"]["output_dir"]).resolve()
         submit_folder = output_root / team_folder_name
+        resume_existing = bool(cfg["inference"].get("resume_existing", False))
+        if submit_folder.exists() and not resume_existing:
+            shutil.rmtree(submit_folder)
         submit_folder.mkdir(parents=True, exist_ok=True)
+        skipped_existing = 0
 
         id_to_class = {int(v): k for k, v in cfg["classes"].items() if k != "background"}
         image_size = int(cfg["data"]["image_size"])
@@ -238,6 +243,12 @@ def main(config_path: str, ckpt_path: str):
 
         for images, metas in tqdm(test_loader, desc="inference"):
             for img, meta in zip(images, metas):
+                out_name = Path(meta["image_name"]).with_suffix(".json").name
+                out_path = submit_folder / out_name
+                if resume_existing and out_path.exists():
+                    skipped_existing += 1
+                    continue
+
                 pred = predict_ensemble_tta(models, img.to(device), cfg, device)
 
                 ow = int(meta["orig_width"])
@@ -316,9 +327,8 @@ def main(config_path: str, ckpt_path: str):
                     "annotations": annos,
                 }
 
-                out_name = Path(meta["image_name"]).with_suffix(".json").name
                 save_json(
-                    str(submit_folder / out_name),
+                    str(out_path),
                     payload,
                     encoding=cfg["inference"].get("json_encoding", "utf-8"),
                 )
@@ -333,6 +343,8 @@ def main(config_path: str, ckpt_path: str):
                 mask_after,
                 mask_filtered,
             )
+        if resume_existing:
+            logger.info("Resume mode skipped existing json files: %d", skipped_existing)
         logger.info("Submission exported: %s", zip_path)
 
     except Exception as exc:

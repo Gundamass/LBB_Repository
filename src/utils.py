@@ -50,7 +50,12 @@ def load_config(config_path: str) -> Dict:
             continue
         p = Path(val)
         if not p.is_absolute():
-            cfg[sec][key] = str((base / p).resolve())
+            resolved = (base / p).resolve()
+            if sec == "data" and not resolved.exists():
+                local_lbb_resolved = (base / "LBB_competition" / p).resolve()
+                if local_lbb_resolved.exists():
+                    resolved = local_lbb_resolved
+            cfg[sec][key] = str(resolved)
 
     gen_val = cfg.get("mask", {}).get("generator", {}).get("output_dir")
     if gen_val is not None:

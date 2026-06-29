@@ -18,13 +18,12 @@ classes:
   collision: 4
 
 training:
-  epochs: 40
+  epochs: 30
   batch_size: 4
-  lr: 0.0001
+  lr: 0.0002
   weight_decay: 0.0001
   num_workers: 4
   amp: true
-  data_parallel: true
   grad_clip_norm: 5.0
   center_loss_weight: 0.0
   early_stopping_patience: 8
@@ -33,19 +32,14 @@ training:
     min_lr: 0.000001
 
 model:
-  detector_name: "fcos_resnet50_fpn"
+  detector_name: "fasterrcnn_resnet50_fpn_v2"
   pretrained: true
-  pretrained_source: "coco"
-  min_size: 1024
-  max_size: 1024
-  score_threshold: 0.01
-  nms_iou_threshold: 0.445
-  detections_per_img: 500
-  topk_candidates: 2000
-  center_sampling_radius: 1.5
+  score_threshold: 0.05
+  nms_iou_threshold: 0.5
+  detections_per_img: 300
 
 hybrid:
-  enable_classical_proposals: false
+  enable_classical_proposals: true
   proposal_tophat_kernel: 9
   proposal_max_per_image: 80
   enable_metric_rescore: true
@@ -59,9 +53,9 @@ inference:
     scales: [1.0, 1.1, 0.9]
   output_dir: "./outputs"
   json_encoding: "utf-8"
-  zip_name: "少样本条件下电子产品外观缺陷检测_默认团队_方案C_fcos_resnet50_fpn.zip"
+  zip_name: "少样本条件下电子产品外观缺陷检测_默认团队_方案C.zip"
 
 system:
-  checkpoints_dir: "./checkpoints/fcos"
+  checkpoints_dir: "./checkpoints"
   logs_dir: "./logs"
   best_ckpt_name: "best_model.pt"

@@ -4,7 +4,9 @@
 
 ## 文件说明
 
-- `config.yaml`: 基础方案 C 配置。
+- `config.yaml`: 当前默认训练配置，已切换为 FCOS ResNet50-FPN。
+- `config.fcos.yaml`: 与默认配置一致的 FCOS 专用实验配置，便于后续网格搜索和对照。
+- `config.fasterrcnn.legacy.yaml`: 旧 Faster R-CNN 基线配置，用于回退和横向对比。
 - `config.no_classic.thr001_nms0445.ensemble_seed123.yaml`: 当前已知线上最优配置，线上 mAP@0.5 为 `0.283265`。
 - `config.no_classic.thr001_nms0455.ensemble_seed123.yaml`: 保留的相邻 NMS 配置，线上 mAP@0.5 为 `0.283147`。
 - `train.py`: 训练、验证、早停和 checkpoint 保存入口。
@@ -43,9 +45,13 @@ python3 -m pip install -r requirements.txt
     └── image/
 ```
 
+如果本地数据仍放在历史目录 `LBB_competition/初赛数据/` 下，配置加载器会在根目录 `初赛数据/` 不存在时自动 fallback 到该目录，不需要改训练命令。
+
 数据集、手标数据、日志、输出 ZIP、SAM/DINO 本地权重等都不会提交到 Git。
 
-## 基础训练
+## 默认 FCOS 训练
+
+默认配置已经从 Faster R-CNN 切换到 FCOS ResNet50-FPN。它是 anchor-free 一阶段检测器，训练和推理接口仍然保持 torchvision detection 的标准格式，所以现有 `train.py`、`inference.py`、TTA、ensemble 和提交 ZIP 流程都不需要改。
 
 在仓库根目录执行：
 
@@ -57,15 +63,27 @@ python3 train.py --config ./config.yaml
 训练完成后默认会保存：
 
 ```text
-./checkpoints/best_model.pt
-./checkpoints/latest.pt
+./checkpoints/fcos/best_model.pt
+./checkpoints/fcos/latest.pt
 ```
 
-## 基础推理
+也可以显式使用 FCOS 专用配置：
+
+```bash
+python3 train.py --config ./config.fcos.yaml
+```
+
+如果需要回到旧 Faster R-CNN 基线：
+
+```bash
+python3 train.py --config ./config.fasterrcnn.legacy.yaml
+```
+
+## 默认 FCOS 推理
 
 ```bash
 conda activate lbb
-python3 inference.py --config ./config.yaml --ckpt ./checkpoints/best_model.pt
+python3 inference.py --config ./config.yaml --ckpt ./checkpoints/fcos/best_model.pt
 ```
 
 提交 ZIP 会生成在：
@@ -169,5 +187,7 @@ python3 evaluate_local_map.py \
 
 - 训练时会把多边形标注转换成检测框。
 - 训练包含强增强：mixup、copy-paste、颜色增强、cutout 和翻转。
+- 默认训练模型已从 Faster R-CNN 切到 FCOS ResNet50-FPN，并支持 COCO 权重的部分兼容加载：保留 backbone、FPN、回归和 centerness 权重，只替换自定义缺陷类别分类头。
+- `src/model.py` 仍保留 Faster R-CNN、RetinaNet 和 DINOv3 Faster R-CNN 入口，方便后续做 ablation。
 - 当前最优提交来自推理侧优化：关闭 classical proposal、低阈值召回、TTA、双 checkpoint ensemble 和更细的 NMS 网格。
 - 验证指标是 mAP@0.5，代码里的自定义实现按比赛说明实现。
